@@ -45,3 +45,7 @@ jspm_packages
 
 # OS stuff
 .DS_Store
+
+ports/c#
+ports/cpp
+ports/java
