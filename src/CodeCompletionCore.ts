@@ -334,6 +334,8 @@ export class CodeCompletionCore {
           startTokenIndex,
           ruleList: path,
         });
+        // todo remove
+        console.log("=====> collected: ", this.ruleNames[ruleIndex]);
         if (this.showDebugOutput) {
           console.log("=====> collected: ", this.ruleNames[ruleIndex]);
         }

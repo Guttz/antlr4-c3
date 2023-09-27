@@ -850,11 +850,18 @@ describe("Code Completion Tests", () => {
       const lexer = new FlinkSqlLexer(inputStream);
 
       const tokenStream = new CommonTokenStream(lexer);
-
       /* console.log("tokens");
         tokenStream.LA(1);
         console.log(tokenStream.getTokens());
    */
+      let laOffset = 1;
+      while (true) {
+        if (tokenStream.LA(laOffset) === -1) {
+          break;
+        }
+        laOffset++;
+      }
+
       const parser = new FlinkSqlParser(tokenStream);
       const errorListener = new TestErrorListener();
       parser.addErrorListener(errorListener);
@@ -864,12 +871,45 @@ describe("Code Completion Tests", () => {
       //core.showDebugOutput = true;
       //core.debugOutputWithTransitions;
 
-      core.preferredRules = new Set([FlinkSqlParser.RULE_fromClause]);
+      core.preferredRules = new Set([
+        //FlinkSqlParser.RULE_fromClause,
+        //FlinkSqlParser.RULE_expression,
+      ]);
 
-      // 1) At the input start.
-      const candidates = core.collectCandidates(0);
-      console.log(candidates.tokens);
-      console.log(candidates.rules);
+      tokenStream.getTokens().forEach((token, index) => {
+        console.log(
+          index,
+          " At token: ",
+          parser.getVocabulary().getDisplayName(token.type)
+        );
+
+        const candidates = core.collectCandidates(index);
+        //console.log(candidates.tokens);
+
+        console.log(
+          "SELECT KW: ",
+          candidates.tokens.has(FlinkSqlLexer.KW_SELECT)
+        );
+        console.log("FROM KW: ", candidates.tokens.has(FlinkSqlLexer.KW_FROM));
+        console.log(
+          "WHERE KW: ",
+          candidates.tokens.has(FlinkSqlLexer.KW_WHERE)
+        );
+        console.log(
+          "Has from rule: ",
+          candidates.rules.has(FlinkSqlParser.RULE_fromClause)
+        );
+
+        const allValidTokens = [];
+        for (const key of candidates.tokens.keys()) {
+          allValidTokens.push(parser.getVocabulary().getDisplayName(key));
+        }
+
+        console.log("allValidTokens");
+        console.log(allValidTokens);
+
+        //console.log(index, "\n", candidates.rules);
+      });
     });
   });
 });
