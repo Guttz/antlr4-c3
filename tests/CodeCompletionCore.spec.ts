@@ -828,23 +828,48 @@ describe("Code Completion Tests", () => {
   });
 
   describe("Flink sql", () => {
-    it("basic tests", () => {
+    it("basic test", () => {
       // No customization happens here, so the c3 engine only returns lexer tokens.
-      const inputStream = CharStreams.fromString('select "a" from tableb');
+      const inputStream = CharStreams.fromString('SELECT "a" FROM TABLEas;');
       const lexer = new FlinkSqlLexer(inputStream);
+
+      const tokenStream = new CommonTokenStream(lexer);
+      const parser = new FlinkSqlParser(tokenStream);
+      const core = new CodeCompletionCore(parser);
+
+      core.preferredRules = new Set([FlinkSqlParser.RULE_fromClause]);
+
+      const candidates = core.collectCandidates(0);
+      console.log(candidates.tokens);
+      console.log(candidates.rules);
+    });
+
+    it("actual useful setup - wip", () => {
+      // No customization happens here, so the c3 engine only returns lexer tokens.
+      const inputStream = CharStreams.fromString('SELECT "a" FROM TABLEas;');
+      const lexer = new FlinkSqlLexer(inputStream);
+
       const tokenStream = new CommonTokenStream(lexer);
 
+      /* console.log("tokens");
+        tokenStream.LA(1);
+        console.log(tokenStream.getTokens());
+   */
       const parser = new FlinkSqlParser(tokenStream);
       const errorListener = new TestErrorListener();
       parser.addErrorListener(errorListener);
-      parser.expression();
       expect(errorListener.errorCount).toEqual(0);
 
       const core = new CodeCompletionCore(parser);
+      //core.showDebugOutput = true;
+      //core.debugOutputWithTransitions;
+
+      core.preferredRules = new Set([FlinkSqlParser.RULE_fromClause]);
 
       // 1) At the input start.
       const candidates = core.collectCandidates(0);
       console.log(candidates.tokens);
+      console.log(candidates.rules);
     });
   });
 });

@@ -659,10 +659,8 @@ withinClause
 
 expression
     : booleanExpression
-    | noExpression
     ;
 
-noExpression : ;
 
 booleanExpression
     : KW_NOT booleanExpression                                        #logicalNot
