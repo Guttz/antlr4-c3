@@ -844,16 +844,114 @@ describe("Code Completion Tests", () => {
       console.log(candidates.rules);
     });
 
-    it("actual useful setup - wip", () => {
+    it("actual useful setup", () => {
       // No customization happens here, so the c3 engine only returns lexer tokens.
       const inputStream = CharStreams.fromString('SELECT "a" FROM TABLEas;');
       const lexer = new FlinkSqlLexer(inputStream);
 
       const tokenStream = new CommonTokenStream(lexer);
-      /* console.log("tokens");
-        tokenStream.LA(1);
-        console.log(tokenStream.getTokens());
-   */
+
+      let laOffset = 1;
+      while (true) {
+        if (tokenStream.LA(laOffset) === -1) {
+          break;
+        }
+        laOffset++;
+      }
+
+      const parser = new FlinkSqlParser(tokenStream);
+      const errorListener = new TestErrorListener();
+      parser.addErrorListener(errorListener);
+      expect(errorListener.errorCount).toEqual(0);
+
+      const core = new CodeCompletionCore(parser);
+
+      tokenStream.getTokens().forEach((token, index) => {
+        console.log(
+          index,
+          " At token: ",
+          parser.getVocabulary().getDisplayName(token.type)
+        );
+
+        const candidates = core.collectCandidates(index);
+        //console.log(candidates.tokens);
+
+        console.log(
+          "SELECT KW: ",
+          candidates.tokens.has(FlinkSqlLexer.KW_SELECT)
+        );
+        console.log("FROM KW: ", candidates.tokens.has(FlinkSqlLexer.KW_FROM));
+        console.log(
+          "WHERE KW: ",
+          candidates.tokens.has(FlinkSqlLexer.KW_WHERE)
+        );
+        console.log(
+          "Has from rule: ",
+          candidates.rules.has(FlinkSqlParser.RULE_fromClause)
+        );
+
+        const allValidTokens = [];
+        for (const key of candidates.tokens.keys()) {
+          allValidTokens.push(parser.getVocabulary().getDisplayName(key));
+        }
+
+        console.log("allValidTokens");
+        console.log(allValidTokens);
+
+        //console.log(index, "\n", candidates.rules);
+      });
+    });
+
+    const generateIgnoredTokens = () => {
+      const acceptedTokens = [
+        FlinkSqlLexer.KW_ALTER,
+        FlinkSqlLexer.KW_TABLE,
+        FlinkSqlLexer.KW_VIEW,
+        FlinkSqlLexer.KW_DATABASE,
+        FlinkSqlLexer.KW_CREATE,
+        FlinkSqlLexer.KW_DESCRIBE,
+        FlinkSqlLexer.KW_DROP,
+        FlinkSqlLexer.KW_EXPLAIN,
+        FlinkSqlLexer.KW_INSERT,
+        FlinkSqlLexer.KW_INTO,
+        FlinkSqlLexer.KW_EXECUTE,
+        FlinkSqlLexer.KW_STATEMENT,
+        FlinkSqlLexer.KW_SET,
+        FlinkSqlLexer.KW_BEGIN,
+        FlinkSqlLexer.KW_END,
+        FlinkSqlLexer.KW_SELECT,
+        FlinkSqlLexer.KW_SHOW,
+        FlinkSqlLexer.KW_CATALOG,
+        FlinkSqlLexer.KW_CURRENT,
+        FlinkSqlLexer.KW_DATABASES,
+        ,
+        FlinkSqlLexer.KW_TABLES,
+        FlinkSqlLexer.KW_COLUMNS,
+        FlinkSqlLexer.KW_VIEWS,
+        FlinkSqlLexer.KW_FUNCTIONS,
+        FlinkSqlLexer.KW_PARTITIONS,
+        FlinkSqlLexer.KW_CREATE,
+        FlinkSqlLexer.KW_FROM,
+        FlinkSqlLexer.KW_WHERE,
+      ];
+      const ignoredTokens = new Set<number>();
+
+      for (let i = 0; i <= FlinkSqlLexer.SLASH_TEXT; i++) {
+        if (!acceptedTokens.includes(i)) {
+          ignoredTokens.add(i);
+        }
+      }
+
+      return ignoredTokens;
+    };
+
+    it("actual useful setup with filters", () => {
+      // No customization happens here, so the c3 engine only returns lexer tokens.
+      const inputStream = CharStreams.fromString("SELECT COLUMNX FROM TABLEB;");
+      const lexer = new FlinkSqlLexer(inputStream);
+
+      const tokenStream = new CommonTokenStream(lexer);
+
       let laOffset = 1;
       while (true) {
         if (tokenStream.LA(laOffset) === -1) {
@@ -875,6 +973,66 @@ describe("Code Completion Tests", () => {
         //FlinkSqlParser.RULE_fromClause,
         //FlinkSqlParser.RULE_expression,
       ]);
+
+      core.ignoredTokens = generateIgnoredTokens();
+
+      tokenStream.getTokens().forEach((token, index) => {
+        console.log(
+          index,
+          " At token: ",
+          parser.getVocabulary().getDisplayName(token.type)
+        );
+
+        const candidates = core.collectCandidates(index);
+        //console.log(candidates.tokens);
+
+        console.log(
+          "SELECT KW: ",
+          candidates.tokens.has(FlinkSqlLexer.KW_SELECT)
+        );
+        console.log("FROM KW: ", candidates.tokens.has(FlinkSqlLexer.KW_FROM));
+        console.log(
+          "WHERE KW: ",
+          candidates.tokens.has(FlinkSqlLexer.KW_WHERE)
+        );
+        console.log(
+          "Has from rule: ",
+          candidates.rules.has(FlinkSqlParser.RULE_fromClause)
+        );
+
+        const allValidTokens = [];
+        for (const key of candidates.tokens.keys()) {
+          allValidTokens.push(parser.getVocabulary().getDisplayName(key));
+        }
+
+        console.log("allValidTokens");
+        console.log(allValidTokens);
+
+        //console.log(index, "\n", candidates.rules);
+      });
+    });
+
+    it("actual useful setup with filters", () => {
+      // No customization happens here, so the c3 engine only returns lexer tokens.
+      const inputStream = CharStreams.fromString("SHOW CURRENT DATABASE;");
+      const lexer = new FlinkSqlLexer(inputStream);
+
+      const tokenStream = new CommonTokenStream(lexer);
+
+      let laOffset = 1;
+      while (true) {
+        if (tokenStream.LA(laOffset) === -1) {
+          break;
+        }
+        laOffset++;
+      }
+
+      const parser = new FlinkSqlParser(tokenStream);
+      const errorListener = new TestErrorListener();
+      parser.addErrorListener(errorListener);
+      expect(errorListener.errorCount).toEqual(0);
+
+      const core = new CodeCompletionCore(parser);
 
       tokenStream.getTokens().forEach((token, index) => {
         console.log(
