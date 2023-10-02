@@ -14,7 +14,7 @@
         "${fileBasenameNoExtension}.ts",
         "--no-coverage",
         "--runInBand",
-        "--testNamePattern=\"actual useful setup - wip\""
+        "--testNamePattern=\"at position 5\""
       ],
       "console": "integratedTerminal",
       "stopOnEntry": false,

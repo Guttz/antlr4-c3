@@ -21,7 +21,23 @@ import {
   PrecedencePredicateTransition,
 } from "antlr4ng";
 
-import { longestCommonPrefix } from "./utils.js";
+export const longestCommonPrefix = <T>(
+  arr1: T[] | undefined,
+  arr2: T[] | undefined
+): T[] => {
+  if (!arr1 || !arr2) {
+    return [];
+  }
+
+  let i;
+  for (i = 0; i < Math.min(arr1.length, arr2.length); i++) {
+    if (arr1[i] !== arr2[i]) {
+      break;
+    }
+  }
+
+  return arr1.slice(0, i);
+};
 
 export type TokenList = number[];
 export type RuleList = number[];
@@ -659,7 +675,7 @@ export class CodeCompletionCore {
       const currentSymbol = this.tokens[tokenListIndex].type;
       if (
         followSets.isExhaustive &&
-        !followSets.combined.contains(currentSymbol)
+        !followSets.combined.contains(currentSymbol) // can't continue with this symbol
       ) {
         callStack.pop();
 
@@ -698,6 +714,9 @@ export class CodeCompletionCore {
         }
       }
 
+      if (atCaret && currentEntry.state.stateType === ATNState.RULE_STOP) {
+        console.log("its over?");
+      }
       if (currentEntry.state.stateType === ATNState.RULE_STOP) {
         // Record the token index we are at, to report it to the caller.
         result.add(currentEntry.tokenListIndex);

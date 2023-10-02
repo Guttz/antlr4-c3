@@ -19,12 +19,13 @@
   "main": "./lib/index.js",
   "scripts": {
     "build": "tsc",
-    "mt": "tsc test.ts --project tsconfig.json",
+    "mt": "tsc test.ts",
     "prepublishOnly": "npm run generate && npm run test",
     "test": "jest --testMatch [ \"**/tests/**/*.spec.ts\" ] --no-coverage --watchAll=false --max-worker=1",
     "test-ci": "jest --testMatch [ \"**/tests/**/*.spec.ts\" ] --no-coverage --watchAll=false --silent",
     "test-coverage": "jest  --testMatch [ \"**/tests/**/*.spec.ts\" ] --coverage --silent",
-    "generate": "antlr4ng -Dlanguage=TypeScript tests/FlinkSqlParser.g4 tests/FlinkSqlLexer.g4 tests/CPP14.g4 tests/Expr.g4 tests/Whitebox.g4 -no-listener -no-visitor -o tests/generated -Xexact-output-dir",
+    "generate": "antlr4ng -Dlanguage=TypeScript tests/SimpleGrammar.g4 tests/FlinkSqlParser.g4 tests/FlinkSqlLexer.g4 tests/CPP14.g4 tests/Expr.g4 tests/Whitebox.g4 -no-listener -no-visitor -o tests/generated -Xexact-output-dir",
+    "generate-simple": "antlr4ng -Dlanguage=TypeScript tests/SimpleGrammar.g4 -no-listener -no-visitor -o tests/generated -Xexact-output-dir",
     "eslint": "eslint ."
   },
   "devDependencies": {

@@ -4,10 +4,22 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CodeCompletionCore = exports.CandidatesCollection = void 0;
+exports.CodeCompletionCore = exports.CandidatesCollection = exports.longestCommonPrefix = void 0;
 /* eslint-disable max-classes-per-file */
 var antlr4ng_1 = require("antlr4ng");
-var utils_js_1 = require("./utils.js");
+var longestCommonPrefix = function (arr1, arr2) {
+    if (!arr1 || !arr2) {
+        return [];
+    }
+    var i;
+    for (i = 0; i < Math.min(arr1.length, arr2.length); i++) {
+        if (arr1[i] !== arr2[i]) {
+            break;
+        }
+    }
+    return arr1.slice(0, i);
+};
+exports.longestCommonPrefix = longestCommonPrefix;
 /**
  * All the candidates which have been found. Tokens and rules are separated.
  * Token entries include a list of tokens that directly follow them (see also the "following" member in the
@@ -159,7 +171,9 @@ var CodeCompletionCore = /** @class */ (function () {
      * @returns the evaluation result of the predicate.
      */
     CodeCompletionCore.prototype.checkPredicate = function (transition) {
-        return transition.getPredicate().evaluate(this.parser, antlr4ng_1.ParserRuleContext.EMPTY);
+        return transition
+            .getPredicate()
+            .evaluate(this.parser, antlr4ng_1.ParserRuleContext.EMPTY);
     };
     /**
      * Walks the rule chain upwards or downwards (depending on translateRulesTopDown) to see if that matches any of the
@@ -206,7 +220,9 @@ var CodeCompletionCore = /** @class */ (function () {
         if (this.preferredRules.has(ruleIndex)) {
             // Add the rule to our candidates list along with the current rule path,
             // but only if there isn't already an entry like that.
-            var path = ruleWithStartTokenList.slice(0, i).map(function (_a) {
+            var path = ruleWithStartTokenList
+                .slice(0, i)
+                .map(function (_a) {
                 var candidate = _a.ruleIndex;
                 return candidate;
             });
@@ -216,7 +232,9 @@ var CodeCompletionCore = /** @class */ (function () {
                     return "continue";
                 }
                 // Found an entry for this rule. Same path? If so don't add a new (duplicate) entry.
-                if (path.every(function (v, j) { return v === rule[1].ruleList[j]; })) {
+                if (path.every(function (v, j) {
+                    return v === rule[1].ruleList[j];
+                })) {
                     addNew = false;
                     return "break";
                 }
@@ -232,6 +250,8 @@ var CodeCompletionCore = /** @class */ (function () {
                     startTokenIndex: startTokenIndex,
                     ruleList: path,
                 });
+                // todo remove
+                console.log("=====> collected: ", this.ruleNames[ruleIndex]);
                 if (this.showDebugOutput) {
                     console.log("=====> collected: ", this.ruleNames[ruleIndex]);
                 }
@@ -306,7 +326,9 @@ var CodeCompletionCore = /** @class */ (function () {
      * subsequent rules could add tokens
      */
     CodeCompletionCore.prototype.collectFollowSets = function (s, stopState, followSets, stateStack, ruleStack) {
-        if (stateStack.find(function (x) { return x === s; })) {
+        if (stateStack.find(function (x) {
+            return x === s;
+        })) {
             return true;
         }
         stateStack.push(s);
@@ -419,7 +441,8 @@ var CodeCompletionCore = /** @class */ (function () {
             startTokenIndex: startTokenIndex,
             ruleIndex: startState.ruleIndex,
         });
-        if (tokenListIndex >= this.tokens.length - 1) { // At caret?
+        if (tokenListIndex >= this.tokens.length - 1) {
+            // At caret?
             if (this.preferredRules.has(startState.ruleIndex)) {
                 // No need to go deeper when collecting entries and we reach a rule that we want to collect anyway.
                 this.translateStackToRuleIndex(callStack);
@@ -473,7 +496,8 @@ var CodeCompletionCore = /** @class */ (function () {
             // or if the current input symbol will be matched somewhere after this entry point.
             // Otherwise stop here.
             var currentSymbol = this.tokens[tokenListIndex].type;
-            if (followSets.isExhaustive && !followSets.combined.contains(currentSymbol)) {
+            if (followSets.isExhaustive &&
+                !followSets.combined.contains(currentSymbol)) {
                 callStack.pop();
                 return result;
             }
@@ -532,7 +556,8 @@ var CodeCompletionCore = /** @class */ (function () {
                     }
                     case antlr4ng_1.Transition.PRECEDENCE: {
                         var predTransition = transition;
-                        if (predTransition.precedence >= this.precedenceStack[this.precedenceStack.length - 1]) {
+                        if (predTransition.precedence >=
+                            this.precedenceStack[this.precedenceStack.length - 1]) {
                             statePipeline.push({
                                 state: transition.target,
                                 tokenListIndex: currentEntry.tokenListIndex,
@@ -543,8 +568,7 @@ var CodeCompletionCore = /** @class */ (function () {
                     case antlr4ng_1.Transition.WILDCARD: {
                         if (atCaret) {
                             if (!this.translateStackToRuleIndex(callStack)) {
-                                for (var _f = 0, _g = antlr4ng_1.IntervalSet.of(antlr4ng_1.Token.MIN_USER_TOKEN_TYPE, this.atn.maxTokenType)
-                                    .toArray(); _f < _g.length; _f++) {
+                                for (var _f = 0, _g = antlr4ng_1.IntervalSet.of(antlr4ng_1.Token.MIN_USER_TOKEN_TYPE, this.atn.maxTokenType).toArray(); _f < _g.length; _f++) {
                                     var token = _g[_f];
                                     if (!this.ignoredTokens.has(token)) {
                                         this.candidates.tokens.set(token, []);
@@ -591,7 +615,7 @@ var CodeCompletionCore = /** @class */ (function () {
                                                 this.candidates.tokens.set(symbol, followingTokens);
                                             }
                                             else {
-                                                this.candidates.tokens.set(symbol, (0, utils_js_1.longestCommonPrefix)(followingTokens, this.candidates.tokens.get(symbol)));
+                                                this.candidates.tokens.set(symbol, (0, exports.longestCommonPrefix)(followingTokens, this.candidates.tokens.get(symbol)));
                                             }
                                         }
                                     }
@@ -622,9 +646,10 @@ var CodeCompletionCore = /** @class */ (function () {
         return result;
     };
     CodeCompletionCore.prototype.generateBaseDescription = function (state) {
-        var stateValue = state.stateNumber === antlr4ng_1.ATNState.INVALID_STATE_NUMBER ? "Invalid" : state.stateNumber;
-        return "[".concat(stateValue, " ").concat(CodeCompletionCore.atnStateTypeMap[state.stateType], "] in ") +
-            "".concat(this.ruleNames[state.ruleIndex]);
+        var stateValue = state.stateNumber === antlr4ng_1.ATNState.INVALID_STATE_NUMBER
+            ? "Invalid"
+            : state.stateNumber;
+        return ("[".concat(stateValue, " ").concat(CodeCompletionCore.atnStateTypeMap[state.stateType], "] in ") + "".concat(this.ruleNames[state.ruleIndex]));
     };
     CodeCompletionCore.prototype.printDescription = function (indentation, state, baseDescription, tokenIndex) {
         var indent = "  ".repeat(indentation);
@@ -634,11 +659,15 @@ var CodeCompletionCore = /** @class */ (function () {
             for (var _i = 0, _a = state.transitions; _i < _a.length; _i++) {
                 var transition = _a[_i];
                 var labels = "";
-                var symbols = transition.label ? transition.label.toArray() : [];
+                var symbols = transition.label
+                    ? transition.label.toArray()
+                    : [];
                 if (symbols.length > 2) {
                     // Only print start and end symbols to avoid large lists in debug output.
-                    labels = this.vocabulary.getDisplayName(symbols[0]) + " .. " +
-                        this.vocabulary.getDisplayName(symbols[symbols.length - 1]);
+                    labels =
+                        this.vocabulary.getDisplayName(symbols[0]) +
+                            " .. " +
+                            this.vocabulary.getDisplayName(symbols[symbols.length - 1]);
                 }
                 else {
                     for (var _b = 0, symbols_1 = symbols; _b < symbols_1.length; _b++) {
@@ -652,9 +681,10 @@ var CodeCompletionCore = /** @class */ (function () {
                 if (labels.length === 0) {
                     labels = "ε";
                 }
-                transitionDescription += "\n".concat(indent, "\t(").concat(labels, ") [").concat(transition.target.stateNumber, " ") +
-                    "".concat(CodeCompletionCore.atnStateTypeMap[transition.target.stateType], "] in ") +
-                    "".concat(this.ruleNames[transition.target.ruleIndex]);
+                transitionDescription +=
+                    "\n".concat(indent, "\t(").concat(labels, ") [").concat(transition.target.stateNumber, " ") +
+                        "".concat(CodeCompletionCore.atnStateTypeMap[transition.target.stateType], "] in ") +
+                        "".concat(this.ruleNames[transition.target.ruleIndex]);
             }
         }
         if (tokenIndex >= this.tokens.length - 1) {
