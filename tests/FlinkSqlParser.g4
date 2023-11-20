@@ -13,7 +13,7 @@ sqlStatements
     ;
 
 sqlStatement
-    : ddlStatement SEMICOLON? | dmlStatement SEMICOLON? | describeStatement SEMICOLON? 
+    : ddlStatement SEMICOLON? | dmlStatement SEMICOLON? | describeStatement SEMICOLON?
     | explainStatement SEMICOLON? | useStatement SEMICOLON?| showStatement SEMICOLON?
     | loadStatement SEMICOLON?| unloadStatement SEMICOLON?| setStatement SEMICOLON?
     | resetStatement SEMICOLON?| jarStatement SEMICOLON?| dtAddStatement SEMICOLON?
@@ -33,13 +33,12 @@ dmlStatement
     : queryStatement | insertStatement
     ;
 
-// some statemen
-describeStatement
-    : (KW_DESCRIBE | KW_DESC) tablePath
-    ;
-
 explainStatement
     : KW_EXPLAIN (explainDetails | KW_PLAN KW_FOR)? (dmlStatement | insertSimpleStatement | insertMulStatement)
+    ;
+    
+describeStatement
+    : (KW_DESCRIBE | KW_DESC) tablePath  
     ;
 
 explainDetails
@@ -441,6 +440,7 @@ tableExpression
     | tableExpression KW_CROSS KW_JOIN tableExpression
     | inlineDataValueClause
     | windoTVFClause
+    | noTableExpression
     ;
 
 tableReference
@@ -448,7 +448,7 @@ tableReference
     ;
 
 tablePrimary
-    : KW_TABLE? tablePath systemTimePeriod? (KW_AS? correlationName)?
+    : KW_TABLE? tablePath systemTimePeriod?
     | KW_LATERAL KW_TABLE LR_BRACKET functionName LR_BRACKET functionParam (COMMA functionParam)* RR_BRACKET RR_BRACKET
     | KW_LATERAL? LR_BRACKET queryStatement RR_BRACKET
     | KW_UNNEST LR_BRACKET expression RR_BRACKET
@@ -657,9 +657,15 @@ withinClause
 
 // expression
 
+// These are empty expressions we've added to support parsing incomplete statements
+noExpression : ;
+noTableExpression: ;
+
 expression
     : booleanExpression
+    | noExpression
     ;
+
 
 
 booleanExpression
@@ -848,7 +854,7 @@ tablePath
     ;
 
 uid
-    : identifier (DOT identifier)*?
+    : identifier (DOT identifier?)*?  // second identifier made optional for autocompletion
     ;
 
 withOption
