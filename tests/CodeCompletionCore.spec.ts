@@ -1059,6 +1059,236 @@ describe("Code Completion Tests", () => {
         console.log(allValidTokens);
       });
     });
+
+    describe("SELECT test", () => {
+      it("at position 1", () => {
+        // No customization happens here, so the c3 engine only returns lexer tokens.
+        const inputStream = CharStreams.fromString("SELECT ");
+        const lexer = new FlinkSqlLexer(inputStream);
+
+        const tokenStream = new CommonTokenStream(lexer);
+
+        let laOffset = 1;
+        while (true) {
+          if (tokenStream.LA(laOffset) === -1) {
+            break;
+          }
+          laOffset++;
+        }
+
+        const parser = new FlinkSqlParser(tokenStream);
+
+        const core = new CodeCompletionCore(parser);
+
+        const candidates = core.collectCandidates(2);
+
+        const allValidTokens = [];
+        for (const key of candidates.tokens.keys()) {
+          allValidTokens.push(parser.getVocabulary().getDisplayName(key));
+        }
+
+        console.log("allValidTokens");
+        console.log(allValidTokens);
+        expect(candidates.tokens.size).toEqual(242);
+      });
+
+      it("at position 2", () => {
+        // No customization happens here, so the c3 engine only returns lexer tokens.
+        const inputStream = CharStreams.fromString("SELECT ");
+        const lexer = new FlinkSqlLexer(inputStream);
+
+        const tokenStream = new CommonTokenStream(lexer);
+
+        let laOffset = 1;
+        while (true) {
+          if (tokenStream.LA(laOffset) === -1) {
+            break;
+          }
+          laOffset++;
+        }
+
+        const parser = new FlinkSqlParser(tokenStream);
+
+        const core = new CodeCompletionCore(parser);
+
+        const candidates = core.collectCandidates(2);
+
+        const allValidTokens = [];
+        for (const key of candidates.tokens.keys()) {
+          allValidTokens.push(parser.getVocabulary().getDisplayName(key));
+        }
+
+        console.log("allValidTokens");
+        console.log(allValidTokens);
+        expect(candidates.tokens.size).toEqual(242);
+      });
+
+      it("at position 6", () => {
+        // No customization happens here, so the c3 engine only returns lexer tokens.
+        const inputStream = CharStreams.fromString("SELECT * FROM ");
+        const lexer = new FlinkSqlLexer(inputStream);
+
+        const tokenStream = new CommonTokenStream(lexer);
+
+        let laOffset = 1;
+        while (true) {
+          if (tokenStream.LA(laOffset) === -1) {
+            break;
+          }
+          laOffset++;
+        }
+
+        const parser = new FlinkSqlParser(tokenStream);
+
+        const core = new CodeCompletionCore(parser);
+        core.translateRulesTopDown = false;
+        core.preferredRules = new Set([
+          FlinkSqlParser.RULE_uid,
+          FlinkSqlParser.RULE_tablePath,
+          FlinkSqlParser.RULE_sqlStatement,
+        ]);
+
+        const candidates = core.collectCandidates(6);
+
+        const allValidTokens = [];
+        for (const key of candidates.tokens.keys()) {
+          allValidTokens.push(parser.getVocabulary().getDisplayName(key));
+        }
+
+        console.log("allValidTokens");
+        console.log(allValidTokens);
+        console.log("rules");
+        console.log(candidates.rules);
+        expect(candidates.tokens.size).toEqual(2);
+      });
+
+      it("at position 10", () => {
+        // No customization happens here, so the c3 engine only returns lexer tokens.
+        const inputStream = CharStreams.fromString(
+          "SELECT * FROM tablea WHERE "
+        );
+        const lexer = new FlinkSqlLexer(inputStream);
+
+        const tokenStream = new CommonTokenStream(lexer);
+
+        let laOffset = 1;
+        while (true) {
+          if (tokenStream.LA(laOffset) === -1) {
+            break;
+          }
+          laOffset++;
+        }
+
+        const parser = new FlinkSqlParser(tokenStream);
+
+        const core = new CodeCompletionCore(parser);
+        core.translateRulesTopDown = false;
+        core.preferredRules = new Set([
+          FlinkSqlParser.RULE_uid,
+          FlinkSqlParser.RULE_identifier,
+          FlinkSqlParser.RULE_tablePath,
+          FlinkSqlParser.RULE_functionName,
+        ]);
+
+        const candidates = core.collectCandidates(10);
+
+        const allValidTokens = [];
+        for (const key of candidates.tokens.keys()) {
+          allValidTokens.push(parser.getVocabulary().getDisplayName(key));
+        }
+
+        console.log("allValidTokens");
+        console.log(allValidTokens);
+        console.log("rules");
+        console.log(candidates.rules);
+        expect(candidates.rules.keys()).toContain(
+          FlinkSqlParser.RULE_functionName
+        );
+      });
+    });
+
+    describe("DESCRIBE test", () => {
+      it("DESCRIBE at position 0", () => {
+        // No customization happens here, so the c3 engine only returns lexer tokens.
+        const inputStream = CharStreams.fromString("");
+        const lexer = new FlinkSqlLexer(inputStream);
+
+        const tokenStream = new CommonTokenStream(lexer);
+
+        let laOffset = 1;
+        while (true) {
+          if (tokenStream.LA(laOffset) === -1) {
+            break;
+          }
+          laOffset++;
+        }
+
+        const parser = new FlinkSqlParser(tokenStream);
+
+        const c = new CodeCompletionCore(parser);
+        c.debugOutputWithTransitions = true;
+        c.showResult = true;
+        c.showDebugOutput = true;
+        c.showRuleStack = true;
+
+        const candidates = c.collectCandidates(0);
+
+        const allTokensNumbers = [];
+
+        for (const key of candidates.tokens.keys()) {
+          allTokensNumbers.push(key);
+        }
+
+        allTokensNumbers.sort((a, b) => {
+          return a - b;
+        });
+
+        const allValidTokens = [];
+        for (const key of allTokensNumbers) {
+          allValidTokens.push(parser.getVocabulary().getDisplayName(key));
+        }
+
+        console.log("allValidTokens");
+        console.log(allTokensNumbers);
+        console.log(allValidTokens);
+        expect(candidates.tokens.size).toEqual(23);
+      });
+      it("DESCRIBE at position 1", () => {
+        // No customization happens here, so the c3 engine only returns lexer tokens.
+        const inputStream = CharStreams.fromString("DESCRIBE ");
+        const lexer = new FlinkSqlLexer(inputStream);
+
+        const tokenStream = new CommonTokenStream(lexer);
+
+        let laOffset = 1;
+        while (true) {
+          if (tokenStream.LA(laOffset) === -1) {
+            break;
+          }
+          laOffset++;
+        }
+
+        const parser = new FlinkSqlParser(tokenStream);
+
+        const c = new CodeCompletionCore(parser);
+        c.preferredRules = new Set([FlinkSqlParser.RULE_tablePath]);
+
+        const candidates = c.collectCandidates(1);
+
+        const allValidTokens = [];
+        for (const key of candidates.tokens.keys()) {
+          allValidTokens.push(parser.getVocabulary().getDisplayName(key));
+        }
+
+        console.log("allValidTokens");
+        console.log(allValidTokens);
+        expect(candidates.tokens.size).toEqual(0);
+        expect(candidates.rules.size).toEqual(1);
+        expect(
+          candidates.rules.has(FlinkSqlParser.RULE_tablePath)
+        ).toBeTruthy();
+      });
+    });
   });
 
   describe("Simple Grammar", () => {
